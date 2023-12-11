@@ -6,29 +6,31 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class CaesarCipherGui extends Application {
+public class main extends Application {
 
-	String alphabetLowercase;
-	String alphabetUppercase;
-	String number;
-	String symbol;
-//	private boolean isDecrypted = false;
 	private boolean isEncrypted = false;
+
+	private CaesarCipher CaesarCipher;
 
 	@Override
 	public void start(Stage primaryStage) {
-		alphabetLowercase = "abcdefghijklmnopqrstuvwxyz";
-		alphabetUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		number = "1234567890";
-		symbol = "~!@#$%^&*()_+{}|:<>?`-=[];',./";
 
+		CaesarCipher = new CaesarCipher();
 		primaryStage.setTitle("Encryption & Decryption");
-
 		VBox hb = new VBox();
+
+		MenuButton menuButton = new MenuButton("Menu");
+		MenuItem ccMenuItem = new MenuItem("CaesarCiper");
+		MenuItem aesMenuItem = new MenuItem("AES");
+		MenuItem desMenuItem = new MenuItem("DES");
+		menuButton.getItems().addAll(ccMenuItem, aesMenuItem, desMenuItem);
+
 		Label textLabel = new Label("Enter text:");
 		TextField textField = new TextField();
 		Label keyLabel = new Label("Key:");
@@ -41,7 +43,7 @@ public class CaesarCipherGui extends Application {
 			String textInput = textField.getText();
 			int key = Integer.parseInt(keyField.getText());
 
-			String encryptedText = encrypt(textInput, key);
+			String encryptedText = CaesarCipher.encrypt(textInput, key);
 			resultTextLabel.setText(encryptedText);
 
 			isEncrypted = true;// 这个时候已完成加密
@@ -53,7 +55,7 @@ public class CaesarCipherGui extends Application {
 				String encryptedText = resultTextLabel.getText();
 				int key = Integer.parseInt(keyField.getText());
 
-				String decryptedText = decrypt(encryptedText, key);
+				String decryptedText = CaesarCipher.decrypt(encryptedText, key);
 				resultTextLabel.setText(decryptedText);
 
 				isEncrypted = false;
@@ -65,86 +67,11 @@ public class CaesarCipherGui extends Application {
 		hb.setAlignment(Pos.CENTER);
 		hb.setPadding(new Insets(50, 50, 0, 50));
 		hb.setSpacing(10); // Add spacing between nodes
-		hb.getChildren().addAll(textLabel, textField, keyLabel, keyField, encryptButton, decryptButton, resultLabel,
-				resultTextLabel);
+		hb.getChildren().addAll(menuButton, textLabel, textField, keyLabel, keyField, encryptButton, decryptButton,
+				resultLabel, resultTextLabel);
 		Scene scene = new Scene(hb, 300, 300);
 		primaryStage.setScene(scene);
 		primaryStage.show();
-	}
-
-	private String encrypt(String plainText, int key) {
-		String cipherText = "";
-
-		for (int i = 0; i < plainText.length(); i++) {
-			char plainCharacter = plainText.charAt(i);
-
-			if (Character.isUpperCase(plainCharacter)) {
-				int position = alphabetUppercase.indexOf(plainCharacter);
-				int newPosition = (position + key) % alphabetUppercase.length();
-				char cipherCharacter = alphabetUppercase.charAt(newPosition);
-				cipherText += cipherCharacter;
-
-			} else if (Character.isLowerCase(plainCharacter)) {
-				int position = alphabetLowercase.indexOf(plainCharacter);
-				int newPosition = (position + key) % alphabetLowercase.length();
-				char cipherCharacter = alphabetLowercase.charAt(newPosition);
-				cipherText += cipherCharacter;
-
-			} else if (Character.isDigit(plainCharacter)) {
-				int position = number.indexOf(plainCharacter);
-				int newPosition = (position + key) % number.length();
-				char cipherCharacter = number.charAt(newPosition);
-				cipherText += cipherCharacter;
-
-			} else if (symbol.indexOf(plainCharacter) != -1) {
-				int position = symbol.indexOf(plainCharacter);
-				int newPosition = (position + key) % number.length();
-				char cipherCharacter = symbol.charAt(newPosition);
-				cipherText += cipherCharacter;
-
-			} else {
-				cipherText += plainCharacter;
-			}
-		}
-		return cipherText;
-	}
-
-	private String decrypt(String cipherText, int key) {
-		String plainText = "";
-
-		for (int i = 0; i < cipherText.length(); i++) {
-			char cipherCharacter = cipherText.charAt(i);
-
-			if (Character.isUpperCase(cipherCharacter)) {
-				int position = alphabetUppercase.indexOf(cipherCharacter);
-				int newPosition = (position - key + alphabetUppercase.length()) % alphabetUppercase.length();
-				char plainCharacter = alphabetUppercase.charAt(newPosition);
-				plainText += plainCharacter;
-
-			} else if (Character.isLowerCase(cipherCharacter)) {
-				int position = alphabetLowercase.indexOf(cipherCharacter);
-				int newPosition = (position - key + alphabetLowercase.length()) % alphabetLowercase.length();
-				char plainCharacter = alphabetLowercase.charAt(newPosition);
-				plainText += plainCharacter;
-
-			} else if (Character.isDigit(cipherCharacter)) {
-				int position = number.indexOf(cipherCharacter);
-				int newPosition = (position - key + number.length()) % number.length();
-				char plainCharacter = number.charAt(newPosition);
-				plainText += plainCharacter;
-
-			} else if (symbol.indexOf(cipherCharacter) != -1) {
-				int position = symbol.indexOf(cipherCharacter);
-				int newPosition = (position - key + number.length()) % number.length();
-				char plainCharacter = symbol.charAt(newPosition);
-				plainText += plainCharacter;
-
-			} else {
-				plainText += cipherCharacter;
-			}
-		}
-
-		return plainText;
 	}
 
 	public static void main(String[] args) {

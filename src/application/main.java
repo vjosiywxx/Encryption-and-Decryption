@@ -21,13 +21,17 @@ public class main extends Application {
 
 	private CaesarCipher CaesarCipher;
 	private DES encryptDES;
-	private DES SecretKey;
+	private DES SecretKeyDES;
+	private AES encryptAES;
+	private AES SecretKeyAES;
 
 	@Override
 	public void start(Stage primaryStage) throws NoSuchAlgorithmException {
 		CaesarCipher = new CaesarCipher();
 		encryptDES = new DES();
-		SecretKey = new DES();
+		SecretKeyDES = new DES();
+		encryptAES = new AES();
+		SecretKeyAES = new AES();
 
 		primaryStage.setTitle("Encryption & Decryption");
 		VBox hb = new VBox();
@@ -106,6 +110,45 @@ public class main extends Application {
 						resultTextField.setText(decryptedText);
 						keyresultTextField.setText(
 								"key:" + Base64.getEncoder().encodeToString(encryptDES.getSecretkey().getEncoded()));
+
+						isEncrypted = false;
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				} else {
+					resultTextField.setText("Please encrypt text first!");
+				}
+			});
+		});
+
+		// AES
+		aesMenuItem.setOnAction(e -> {
+			menuButton.setText("AES");
+			encryptButton.setOnAction(ev -> {
+				String textInput = textField.getText();
+
+				try {
+					byte[] encryptedText = encryptAES.encrypt(textInput);
+					resultTextField.setText(Base64.getEncoder().encodeToString(encryptedText));
+					keyresultTextField.setText(
+							"key:" + Base64.getEncoder().encodeToString(encryptAES.getSecretkey().getEncoded()));
+
+					isEncrypted = true;
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			});
+
+			decryptButton.setOnAction(ev -> {
+				if (isEncrypted) {
+					String encryptedText = resultTextField.getText();
+
+					try {
+						byte[] decodedencryptedText = Base64.getDecoder().decode(encryptedText);
+						String decryptedText = encryptAES.decrypt(decodedencryptedText);
+						resultTextField.setText(decryptedText);
+						keyresultTextField.setText(
+								"key:" + Base64.getEncoder().encodeToString(encryptAES.getSecretkey().getEncoded()));
 
 						isEncrypted = false;
 					} catch (Exception ex) {

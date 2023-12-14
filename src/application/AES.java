@@ -12,14 +12,13 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 public class AES {
-	private String alphabetLowercase;
-	private String alphabetUppercase;
-	private String number;
-	private String symbol;
+	String alphabetLowercase;
+	String alphabetUppercase;
+	String number;
+	String symbol;
 
 	private SecretKey secretkey;
 
-	// 先调用generateKey()的方法生成一个密钥 初始化字符集
 	public AES() throws NoSuchAlgorithmException {
 		generateKey();
 		alphabetLowercase = "abcdefghijklmnopqrstuvwxyz";
@@ -28,7 +27,6 @@ public class AES {
 		symbol = "~!@#$%^&*()_+{}|:<>?`-=[];',./";
 	}
 
-	// 这个方法使用 KeyGenerator 来生成一个DES密钥，并将其设置为类中的 secretkey 属性
 	public void generateKey() throws NoSuchAlgorithmException {
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 		keyGen.init(128);

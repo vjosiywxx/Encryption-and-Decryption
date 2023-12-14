@@ -12,10 +12,10 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 public class DES {
-	private String alphabetLowercase;
-	private String alphabetUppercase;
-	private String number;
-	private String symbol;
+	String alphabetLowercase;
+	String alphabetUppercase;
+	String number;
+	String symbol;
 
 	private SecretKey secretkey;
 

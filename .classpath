@@ -8,5 +8,7 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Java-FX"/>
+	<classpathentry kind="lib" path="/Users/josieying/Downloads/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/josieying/Downloads/mysql-connector-j-8.2.0/mysql-connector-j-8.2.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

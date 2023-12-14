@@ -11,7 +11,7 @@ public class CaesarCipher {
 		alphabetLowercase = "abcdefghijklmnopqrstuvwxyz";
 		alphabetUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		number = "1234567890";
-		symbol = "~!@#$%^&*()_+{}|:<>?`-=[];',./";
+		symbol = "~!@#$%^&*()_+{}|:<>?`-=[];',./ ";
 	}
 
 	public String encrypt(String plainText, int key) {

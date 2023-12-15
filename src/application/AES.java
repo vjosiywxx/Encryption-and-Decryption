@@ -40,6 +40,7 @@ public class AES {
 		byte[] byteDataToEncrypt = strDataToEncrypt.getBytes();
 		byte[] byteCipherText = aesCipher.doFinal(byteDataToEncrypt);
 		return byteCipherText;
+
 	}
 
 	public String decrypt(byte[] strCipherText) throws NoSuchAlgorithmException, NoSuchPaddingException,
@@ -48,6 +49,7 @@ public class AES {
 		aesCipher.init(Cipher.DECRYPT_MODE, this.getSecretkey());
 		byte[] byteDecryptedText = aesCipher.doFinal(strCipherText);
 		return new String(byteDecryptedText);
+
 	}
 
 	public SecretKey getSecretkey() {

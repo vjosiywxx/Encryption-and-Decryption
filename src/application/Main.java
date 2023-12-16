@@ -202,7 +202,6 @@ public class Main extends Application {
 				entextField.setText(encryptedText);
 
 				ccsql.insertCCData(key, encryptedText);
-
 			});
 
 		});

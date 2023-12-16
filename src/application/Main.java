@@ -50,6 +50,7 @@ public class Main extends Application {
 	private AESsql aessql;
 	private Loginsql loginsql;
 	private Connection connection;
+	private Hash hashcodeHash;
 
 	SecretKey keyDES;
 	SecretKey keyAES;
@@ -73,15 +74,16 @@ public class Main extends Application {
 			String username = usernameField.getText();
 			String password = passwordField.getText();
 
-//			if (username.equals("user") && password.equals("pass")) {
-//				loginsql.insertloginData(username, password);
-			isLoggedIn = true;
-			loginStatus.setText("Successfully logged in!");
+			if (username.equals("ying") && password.equals("pass")) {
+				String hashedPassword = hashcodeHash.getMd5(password);
+				loginsql.insertloginData(username, hashedPassword);
+				isLoggedIn = true;
+				loginStatus.setText("Successfully logged in!");
 
-			choosePage(primaryStage);
-//			} else {
-//				loginStatus.setText("Something goes wrong, please try again!");
-//			}
+				choosePage(primaryStage);
+			} else {
+				loginStatus.setText("Something goes wrong, please try again!");
+			}
 		});
 
 		loginVBox.getChildren().addAll(usernameLabel, usernameField, pswLabel, passwordField, loginButton, loginStatus);

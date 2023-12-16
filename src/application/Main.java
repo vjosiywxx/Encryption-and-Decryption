@@ -1,18 +1,19 @@
 package application;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Base64;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
-//import com.mysql.cj.xdevapi.Statement;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -27,8 +28,10 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -36,7 +39,7 @@ public class Main extends Application {
 	String colorString;
 	static final String masterKey = "NbWntnB1";
 	static final String masterKeyAes = "NbWntnB1NbWntnB1";
-	VBox hb;
+	VBox vb;
 	private CaesarCipher CaesarCipher = new CaesarCipher();
 	private DES des;// 在用户选择的des算法中加密输入的text
 	private DES secretKeyDES; // 加密des中生成的key
@@ -47,7 +50,7 @@ public class Main extends Application {
 	private AESsql aessql;
 	private Loginsql loginsql;
 	private Connection connection;
-	private Statement statement;
+
 	SecretKey keyDES;
 	SecretKey keyAES;
 
@@ -65,9 +68,7 @@ public class Main extends Application {
 		Label pswLabel = new Label("Password: ");
 		PasswordField passwordField = new PasswordField();
 		Button loginButton = new Button("Login");
-
 		Label loginStatus = new Label();
-
 		loginButton.setOnAction(e -> {
 			String username = usernameField.getText();
 			String password = passwordField.getText();
@@ -117,7 +118,7 @@ public class Main extends Application {
 	private void enPage(Stage primaryStage) {
 
 		primaryStage.setTitle("Encryption Page");
-		hb = new VBox();
+		vb = new VBox();
 
 		MenuButton menuButton = new MenuButton("Choose Algorithm");
 		MenuItem ccMenuItem = new MenuItem("CaesarCiper");
@@ -143,9 +144,26 @@ public class Main extends Application {
 		Button encryptButton = new Button("Encrypt");
 
 		ColorPicker cpicker = new ColorPicker();
-		Button saveButton = new Button("Save Theme Color");
-		Button loadButton = new Button("Load last saved Theme Color");
+		Button saveButton = new Button("Save Theme");
+		Button loadButton = new Button("Load last saved Theme");
+
+		Label fileLabel = new Label("File name:");
+		TextField fileField = new TextField();
+		fileField.setPromptText("e.g: Enkey.txt");
+		Button saveKeytoFileButton = new Button("Save Key to File");
 		Button backToSPageButton = new Button("Go back");
+
+		HBox colorBox = new HBox();
+		colorBox.getChildren().addAll(cpicker, saveButton, loadButton);
+		colorBox.setAlignment(Pos.CENTER);
+		colorBox.setPadding(new Insets(20, 20, 0, 20));
+		colorBox.setSpacing(10);
+
+		HBox fileBox = new HBox();
+		fileBox.getChildren().addAll(fileLabel, fileField);
+		fileBox.setAlignment(Pos.CENTER);
+		fileBox.setPadding(new Insets(20, 20, 0, 20));
+		fileBox.setSpacing(10);
 
 		backToSPageButton.setOnAction(e -> {
 			choosePage(primaryStage);
@@ -154,7 +172,7 @@ public class Main extends Application {
 		cpicker.setOnAction(e -> {
 			Color value = cpicker.getValue();
 			colorString = value.getRed() + "," + value.getGreen() + "," + value.getBlue();
-			hb.setBackground(new Background(new BackgroundFill(value, null, null)));// Execute a query
+			vb.setBackground(new Background(new BackgroundFill(value, null, null)));// Execute a query
 		});
 
 		String colorName = "bgColor";
@@ -166,9 +184,17 @@ public class Main extends Application {
 			loadSetting(colorName);
 		});
 
+		saveKeytoFileButton.setOnAction(e -> {
+			String encryptedKey = enKeyTextField.getText();
+			String fileName = fileField.getText();
+
+			saveEncryptedKeyToFile(encryptedKey, fileName);
+		});
+
 		ccMenuItem.setOnAction(e -> {
 			menuButton.setText("CaesarCiper");
 			encryptButton.setOnAction(ev -> {
+
 				String textInput = textField.getText();
 				int key = Integer.parseInt(keyField.getText());
 
@@ -189,14 +215,12 @@ public class Main extends Application {
 				try {
 					byte[] encryptedText = des.encrypt(textInput);
 					String enText = Base64.getEncoder().encodeToString(encryptedText);
-					entextField.setText(enText);// text已加密
+					entextField.setText(enText);
 
 					String KeyString = Base64.getEncoder().encodeToString(des.getSecretkey().getEncoded());
-//					System.out.println("originalkey:" + KeyString);//未加密的generated的key
-					byte[] enKey = secretKeyDES.encrypt(KeyString);// 用secretkeydes的方法把原始的key加密了
+					byte[] enKey = secretKeyDES.encrypt(KeyString);//
 					String encryptedKeyString = Base64.getEncoder().encodeToString(enKey);
-					enKeyTextField.setText(encryptedKeyString);// key已加密
-
+					enKeyTextField.setText(encryptedKeyString);
 					dessql.insertDESData(encryptedKeyString, enText);
 
 				} catch (Exception ex) {
@@ -211,14 +235,12 @@ public class Main extends Application {
 			menuButton.setText("AES");
 			encryptButton.setOnAction(ev -> {
 				String textInput = textField.getText();
-//				DESEncrypt(masterKey, textInput);
 				try {
 					byte[] encryptedText = aes.encrypt(textInput);// 进行加密
 					String enText = Base64.getEncoder().encodeToString(encryptedText);
 					entextField.setText(enText);// text已加密
 
 					String KeyString = Base64.getEncoder().encodeToString(aes.getSecretkey().getEncoded());
-//					System.out.println(KeyString);
 
 					byte[] enKey = secretKeyAES.encrypt(KeyString);// secretkeyaes的方法把原始的key加密了
 					String encryptedKeyString = Base64.getEncoder().encodeToString(enKey);
@@ -233,13 +255,13 @@ public class Main extends Application {
 
 		});
 
-		hb.setAlignment(Pos.CENTER);
-		hb.setPadding(new Insets(20, 20, 0, 20));
-		hb.setSpacing(10); // Add spacing between nodes
-		hb.getChildren().addAll(cpicker, saveButton, loadButton, menuButton, textLabel, textField, keyLabel, keyField,
-				encryptButton, entextLabel, entextField, enKeyLabel, enKeyTextField, enReminderKeyLabel,
+		vb.setAlignment(Pos.CENTER);
+		vb.setPadding(new Insets(20, 20, 0, 20));
+		vb.setSpacing(10);
+		vb.getChildren().addAll(colorBox, menuButton, textLabel, textField, keyLabel, keyField, encryptButton,
+				entextLabel, entextField, enKeyLabel, enKeyTextField, enReminderKeyLabel, fileBox, saveKeytoFileButton,
 				backToSPageButton);
-		Scene eScene = new Scene(hb, 500, 600);
+		Scene eScene = new Scene(vb, 500, 600);
 		primaryStage.setScene(eScene);
 		primaryStage.show();
 	}
@@ -259,7 +281,7 @@ public class Main extends Application {
 		TextField keyField = new TextField();
 		Label ccentextLabel = new Label("Encrypted Text (Only for Caesar Cipher):");
 		TextField ccentextField = new TextField();
-		Label resultLabel = new Label("Result decrpted - text:");
+		Label resultLabel = new Label("Result - Decrypted Text:");
 		TextField decTextField = new TextField();
 		decTextField.setEditable(false);
 		Button decryptButton = new Button("Decrypt");
@@ -267,17 +289,26 @@ public class Main extends Application {
 		backToSPageButton.setOnAction(e -> {
 			choosePage(primaryStage);
 		});
+		Button loadKeyFromFileButton = new Button("Load Key From File");
+		loadKeyFromFileButton.setOnAction(e -> {
+			FileChooser fileChooser = new FileChooser();
+			fileChooser.setTitle("Open Encrypted Key File");
+			File selectedFile = fileChooser.showOpenDialog(primaryStage);
 
+			if (selectedFile != null) {
+				String filePath = selectedFile.getAbsolutePath();
+				loadEncryptedKeyFromFile(filePath, keyField);
+			}
+		});
+
+		// CC
 		ccMenuItem.setOnAction(e -> {
 			menuButton.setText("CaesarCiper");
 			decryptButton.setOnAction(ev -> {
-
 				String encryptedText = ccentextField.getText();
 				int key = Integer.parseInt(keyField.getText());
-
 				String decryptedText = CaesarCipher.decrypt(encryptedText, key);
 				decTextField.setText(decryptedText);
-
 			});
 		});
 
@@ -285,11 +316,10 @@ public class Main extends Application {
 		desMenuItem.setOnAction(e -> {
 			menuButton.setText("DES");
 			decryptButton.setOnAction(ev -> {
-
 				try {
 					String enKey = keyField.getText();
 					Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
-					String sql = "SELECT * FROM desEncryptedData WHERE desEncryptedKey = ?";
+					String sql = "SELECT * FROM desEncryptedData WHERE desEncryptedKey = ? ";
 					PreparedStatement statement = connection.prepareStatement(sql);
 					statement.setString(1, enKey);
 					ResultSet resultSet = statement.executeQuery();
@@ -299,18 +329,33 @@ public class Main extends Application {
 						String enTextDB = resultSet.getString("desEncryptedText");
 
 						byte[] enKeyBytesDB = Base64.getDecoder().decode(enKeyStringDB);
-						String decryptedkeyString = secretKeyDES.decrypt(enKeyBytesDB);
+						String decryptedKeyString = secretKeyDES.decrypt(enKeyBytesDB);
+						byte[] descrptedKey = Base64.getDecoder().decode(decryptedKeyString);
+						SecretKey secretKey = new SecretKeySpec(descrptedKey, 0, descrptedKey.length, "DES");
+						des.setSecretkey(secretKey);
 
-						byte[] enTextBytesDB = Base64.getDecoder().decode(enTextDB);
-						String decryptedTextString = des.decrypt(enTextBytesDB);
+						byte[] inputenKeyBytes = Base64.getDecoder().decode(enKey);
+						String decInputenKeyBytes = secretKeyDES.decrypt(inputenKeyBytes);
 
-						decTextField.setText(decryptedTextString);
+						if (decryptedKeyString.equals(decInputenKeyBytes)) {
+							byte[] enTextBytesDB = Base64.getDecoder().decode(enTextDB);
+							String decryptedTextString = des.decrypt(enTextBytesDB);
+
+							decTextField.setText(decryptedTextString);
+						} else {
+							decTextField.setText("Invalid Key，please try again!");
+						}
+					} else {
+						decTextField.setText("Key not found!");
 					}
+
 					resultSet.close();
 					statement.close();
 					connection.close();
+
 				} catch (Exception ex) {
 					ex.printStackTrace();
+
 				}
 
 			});
@@ -335,12 +380,24 @@ public class Main extends Application {
 						String enTextDB = resultSet.getString("aesEncryptedText");
 
 						byte[] enKeyBytesDB = Base64.getDecoder().decode(enKeyStringDB);
-						String decryptedkeyString = secretKeyAES.decrypt(enKeyBytesDB);
+						String decryptedKeyString = secretKeyAES.decrypt(enKeyBytesDB);
+						byte[] descrptedKey = Base64.getDecoder().decode(decryptedKeyString);
+						SecretKey secretKey = new SecretKeySpec(descrptedKey, 0, descrptedKey.length, "AES");
+						aes.setSecretkey(secretKey);
 
-						byte[] enTextBytesDB = Base64.getDecoder().decode(enTextDB);
-						String decryptedTextString = aes.decrypt(enTextBytesDB);
+						byte[] inputenKeyBytes = Base64.getDecoder().decode(enKey);
+						String decInputenKeyBytes = secretKeyAES.decrypt(inputenKeyBytes);
 
-						decTextField.setText(decryptedTextString);
+						if (decryptedKeyString.equals(decInputenKeyBytes)) {
+							byte[] enTextBytesDB = Base64.getDecoder().decode(enTextDB);
+							String decryptedTextString = aes.decrypt(enTextBytesDB);
+
+							decTextField.setText(decryptedTextString);
+						} else {
+							decTextField.setText("Invalid Key，please try again!");
+						}
+					} else {
+						decTextField.setText("Key not found!");
 					}
 					resultSet.close();
 					statement.close();
@@ -355,8 +412,8 @@ public class Main extends Application {
 		dBox.setAlignment(Pos.CENTER);
 		dBox.setPadding(new Insets(20, 20, 0, 20));
 		dBox.setSpacing(10); // Add spacing between nodes
-		dBox.getChildren().addAll(menuButton, keyLabel, keyField, ccentextLabel, ccentextField, decryptButton,
-				resultLabel, decTextField, backToSPageButton);
+		dBox.getChildren().addAll(menuButton, keyLabel, loadKeyFromFileButton, keyField, ccentextLabel, ccentextField,
+				decryptButton, resultLabel, decTextField, backToSPageButton);
 		Scene dScene = new Scene(dBox, 500, 600);
 		primaryStage.setScene(dScene);
 		primaryStage.show();
@@ -409,39 +466,13 @@ public class Main extends Application {
 				String[] colors = strColor.split(",");
 				Color c = new Color(Double.parseDouble(colors[0]), Double.parseDouble(colors[1]),
 						Double.parseDouble(colors[2]), 1);
-				hb.setBackground(new Background(new BackgroundFill(c, null, null)));
+				vb.setBackground(new Background(new BackgroundFill(c, null, null)));
 
 			}
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		}
 	}
-
-//	public String DESEncrypt(String masterKey, String textInput) {
-//
-//		String result = null;// 如果没有加密的文本的话 （说明并没有开始加密）
-//		try {
-//			DES des = new DES();
-//			if (masterKey.length() != 8) {
-//				throw new IllegalArgumentException("DES密钥长度必须是8个字节");
-//			}
-////			byte[] keyBytes = Base64.getDecoder().decode(masterKey);// 将mk变成byte形式
-//			byte[] keyBytes = masterKey.getBytes("UTF-8");
-//
-//			SecretKey desMasterKey = new SecretKeySpec(keyBytes, "DES");//
-//			des.setSecretkey(desMasterKey);// 得到给des加密方法用的mk
-//			System.out.println("The plain text: " + textInput);
-//			byte[] enText = des.encrypt(textInput);
-//			result = Base64.getEncoder().encodeToString(enText);// 加密文本并将文本转换成string形式
-//			System.out.println(result);
-//			System.out.println(enText);
-//
-//		} catch (Exception e) {
-//			System.out.println("Error in DES: " + e);
-//			e.printStackTrace();
-//		}
-//		return result;
-//	}
 
 	private void setDESMasterKey() {
 		byte[] masterKeyBytes = "NbWntnB1".getBytes();
@@ -453,6 +484,31 @@ public class Main extends Application {
 		byte[] masterKeyBytes = "NbWntnB1NbWntnB1".getBytes();
 		keyAES = new SecretKeySpec(masterKeyBytes, "AES");
 		secretKeyAES.setSecretkey(keyAES);
+	}
+
+	public void saveEncryptedKeyToFile(String encryptedKey, String fileName) {
+		try {
+			byte[] encryptedKeyBytes = Base64.getDecoder().decode(encryptedKey);
+			Path path = Paths.get(fileName);
+			Files.write(path, encryptedKeyBytes);
+			System.out.println("Encrypted key saved to the file" + fileName);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Failed to save encrypted key to file: " + fileName);
+		}
+	}
+
+	public void loadEncryptedKeyFromFile(String fileName, TextField keyField) {
+		try {
+			Path path = Paths.get(fileName);
+			byte[] encryptedKeybytes = Files.readAllBytes(path);
+			String encryptedkey = Base64.getEncoder().encodeToString(encryptedKeybytes);
+			keyField.setText(encryptedkey);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Failed to load encrypted key from file: " + fileName);
+		}
+
 	}
 
 	static final String JDBC_URL = "jdbc:mysql://127.0.0.1:3306/security";

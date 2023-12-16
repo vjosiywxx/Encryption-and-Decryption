@@ -16,6 +16,7 @@ public class DES {
 	String alphabetUppercase;
 	String number;
 	String symbol;
+	private static DES instance;
 
 	private SecretKey secretkey;
 
@@ -26,6 +27,13 @@ public class DES {
 		alphabetUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		number = "1234567890";
 		symbol = "~!@#$%^&*()_+{}|:<>?`-=[];',./";
+	}
+
+	public static DES getInstance() throws NoSuchAlgorithmException {
+		if (instance == null) {
+			instance = new DES();
+		}
+		return instance;
 	}
 
 	// 这个方法使用 KeyGenerator 来生成一个DES密钥，并将其设置为类中的 secretkey 属性
